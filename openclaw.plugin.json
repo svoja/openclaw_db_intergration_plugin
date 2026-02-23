@@ -1,0 +1,13 @@
+{
+  "id": "db-logistic",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "envPath": {
+        "type": "string",
+        "description": "Path to .env file (defaults to project root)"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "db-logistic",
+  "version": "1.0.0",
+  "description": "OpenClaw plugin for querying bread_logistics MySQL database",
+  "main": "index.ts",
+  "dependencies": {
+    "mysql2": "^3.11.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
