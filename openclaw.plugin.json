@@ -1,13 +1,19 @@
 {
-  "id": "db-logistic",
+  "id": "db-mysql",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
     "properties": {
       "envPath": {
         "type": "string",
-        "description": "Path to .env file (defaults to project root)"
+        "description": "Path to .env file with DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME"
       }
+    }
+  },
+  "uiHints": {
+    "envPath": {
+      "label": "Path to .env file",
+      "placeholder": "/opt/myapp/.env"
     }
   }
 }

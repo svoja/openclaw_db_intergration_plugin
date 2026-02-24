@@ -1,8 +1,11 @@
 {
-  "name": "db-logistic",
+  "name": "db-mysql",
   "version": "1.0.0",
-  "description": "OpenClaw plugin for querying bread_logistics MySQL database",
+  "description": "OpenClaw plugin — connect any MySQL/MariaDB and give the agent read-only SQL tools",
   "main": "index.ts",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
   "dependencies": {
     "mysql2": "^3.11.0",
     "dotenv": "^16.4.0"

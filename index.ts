@@ -3,16 +3,29 @@ import { createPool, type Pool } from "mysql2/promise";
 import dotenv from "dotenv";
 import { existsSync } from "fs";
 
-// Load .env: try absolute path first (server), then relative to plugin dir (dev / dist).
-const envPaths = [
-  "/opt/logistic_OS/.env",
-  path.join(__dirname, "..", "..", ".env"),
-  path.join(__dirname, "..", "..", "..", ".env"),
-];
-for (const p of envPaths) {
-  if (existsSync(p)) {
-    dotenv.config({ path: p });
-    break;
+type Api = {
+  registerTool: (opts: unknown, extra?: { optional?: boolean }) => void;
+  config?: {
+    plugins?: { entries?: Record<string, { config?: { envPath?: string } }> };
+  };
+};
+
+function loadEnv(api: Api): void {
+  const cfg = api?.config?.plugins?.entries?.["db-mysql"]?.config;
+  if (cfg?.envPath && existsSync(cfg.envPath)) {
+    dotenv.config({ path: cfg.envPath });
+    return;
+  }
+  const envPaths = [
+    path.join(__dirname, "..", "..", ".env"),
+    path.join(__dirname, "..", "..", "..", ".env"),
+    path.join(process.cwd(), ".env"),
+  ];
+  for (const p of envPaths) {
+    if (existsSync(p)) {
+      dotenv.config({ path: p });
+      return;
+    }
   }
 }
 
@@ -20,12 +33,18 @@ let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
+    const database = process.env.DB_NAME ?? "";
+    if (!database) {
+      throw new Error(
+        "DB_NAME is not set. Add DB_NAME to your .env or environment (see README.md)."
+      );
+    }
     pool = createPool({
       host: process.env.DB_HOST || "localhost",
       port: parseInt(process.env.DB_PORT || "3306", 10),
       user: process.env.DB_USER || "root",
       password: process.env.DB_PASSWORD ?? "",
-      database: process.env.DB_NAME || "bread_logistics",
+      database,
       waitForConnections: true,
       connectionLimit: 100,
       queueLimit: 0,
@@ -44,12 +63,14 @@ function isReadOnly(sql: string): boolean {
   return true;
 }
 
-export default function (api: { registerTool: (opts: unknown, extra?: { optional?: boolean }) => void }) {
+export default function (api: Api) {
+  loadEnv(api);
+
   api.registerTool(
     {
       name: "db_query",
       description:
-        "Execute a read-only SQL SELECT query against the bread_logistics database. Use for retrieving data only. Never use for INSERT, UPDATE, DELETE, or schema changes.",
+        "Execute a read-only SQL SELECT query against the configured MySQL/MariaDB database. Use for retrieving data only. Never use for INSERT, UPDATE, DELETE, or schema changes.",
       parameters: {
         type: "object",
         properties: {
@@ -84,7 +105,7 @@ export default function (api: { registerTool: (opts: unknown, extra?: { optional
     {
       name: "db_schema",
       description:
-        "Get the list of tables and their columns in the bread_logistics database. Use this to understand the schema before writing SQL queries.",
+        "Get the list of tables and their columns in the configured database. Use this to understand the schema before writing SQL queries.",
       parameters: {
         type: "object",
         properties: {},
